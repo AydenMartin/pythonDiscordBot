@@ -194,6 +194,6 @@ class MyClient(discord.Client):
 def Main():
     client = MyClient()
 
-    client.run('NzI4NzY1OTI2MDY1MDQ1NTQ0.XwNfOg.yibc9a874WGRmUqNgwP5cEHU_jE')
+    client.run('token')
 
 Main()
