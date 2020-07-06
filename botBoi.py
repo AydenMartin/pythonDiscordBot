@@ -16,17 +16,19 @@ menuGang = {'arby': ['gobbler','mountain','beefboi','sliders'],
 
 def clearFile(id):
     if os.path.exists(os.getcwd() + '\\Users\\' + str(id) + '\\foodList'):
-            f = open(os.getcwd() + '\\Users\\' + str(id) + '\\foodList','w+')
-            f.truncate()
-            f.close()
-            
+        f = open(os.getcwd() + '\\Users\\' + str(id) + '\\foodList', 'w+')
+        f.truncate()
+        f.close()
+
     else:
-            return
-
-
+        return
+def chooseRando(dict):
+    rest = random.randint(0,len(dict)-2)
+    rest = dict[rest]
+    rest = rest.split(',')
+    restchoice = random.randint(1,len(rest)-1)
+    return str(rest[0] + ' ' + rest[restchoice])
 class MyClient(discord.Client):
-
-
 
     async def on_ready(self):
         print('Logged on as', self.user)
@@ -50,8 +52,6 @@ class MyClient(discord.Client):
         if message.author == self.user:
            return
 
-        if message.content == 'serverTest':
-            self.onServer()
 
         if message.content == 'botOff':
             self.close()
@@ -67,38 +67,38 @@ class MyClient(discord.Client):
 
         if str(message.content).startswith('myfood'):
             foodFolder = os.getcwd() + '\\Users\\' + str(message.author.id) + '\\foodList'
-
-            if message.content == 'myfood clear':
-
-                clearFile(message.author.id)
-                await message.channel.send("your file has been cleared")
-                return
             if (os.path.exists(foodFolder)) != True:
                 textFile = open(str(foodFolder), 'w')
                 textFile.close()
-                string = 'your food list is empty rn user ' \
-                         + str(message.author.id) \
-                         + ' to add food use command addfood'
-                await message.channel.send(string)
-                return
-            else:
-                foodFolder = open(os.getcwd() + '\\Users\\' + str(message.author.id) + '\\foodList', 'r')
-                parse = foodFolder.readline(100)
-                parse = parse.split(';')
-                restaurants = {}
-                print(parse)
-                string = "your current restuarants and food are: "
-                for i in range(0,len(parse)-1):
-                    menu = parse[i].split(',')
-                    string += str(menu) + '\n'
-                    restaurants[menu[0]] = menu
 
-                print(restaurants)
-                foodFolder.close()
+            if message.content == 'myfood clear':
+                clearFile(message.author.id)
+                await message.channel.send("your file has been cleared")
+                return
+
+            if message.content == 'myfood random':
+                f = open(foodFolder,'r')
+                contents = f.read()
+                contents = contents.split(';')
+                choice = chooseRando(contents)
+                await message.channel.send(choice)
+                return
+
+            foodFolder = open(os.getcwd() + '\\Users\\' + str(message.author.id) + '\\foodList', 'r')
+            parse = foodFolder.read()
+            parse = parse.split(';')
+            restaurants = {}
+            print(parse)
+            string = "your current restuarants and food are: "
+            for i in range(0,len(parse)-1):
+                menu = parse[i].split(',')
+                string += str(menu) + '\n'
+                restaurants[menu[0]] = menu
+
+            print(restaurants)
+            foodFolder.close()
 
             await message.channel.send(string)
-
-
             return
 
         if str(message.content).startswith('addfood'):
@@ -194,6 +194,6 @@ class MyClient(discord.Client):
 def Main():
     client = MyClient()
 
-    client.run('Token')
+    client.run('NzI4NzY1OTI2MDY1MDQ1NTQ0.XwNfOg.yibc9a874WGRmUqNgwP5cEHU_jE')
 
 Main()
