@@ -181,16 +181,20 @@ class MyClient(discord.Client):
                 foodFolder.write(addition)
                 foodFolder.close()
                 await message.channel.send("succesfully added")
-        if str(message.content.startswith('y=')):
+        if str(message.content).startswith('y=')and message.author != self.user and len(str(message.content))>2 :
             eq = message.content[2:]
-            x = Symbol('x')
-            transformations = (standard_transformations +(implicit_multiplication_application,))
-            y = parse_expr(eq,transformations=transformations)
+            try:
+                transformations = (standard_transformations +(implicit_multiplication_application,))
+                y = parse_expr(eq,transformations=transformations)
+            except Exception as e:
+                print(e)
+                return
             p1 = plot(y,show=False)
             backend = p1.backend(p1)
             backend.process_series()
             backend.fig.savefig('graph.png', dpi=300)
             await message.channel.send(file=discord.File('graph.png'))
+            return
 
         if str(message.content).startswith('botHelp') and len(str(message.content).split(' ')) < 3:
             if(message.content == 'botHelp myfood'):
