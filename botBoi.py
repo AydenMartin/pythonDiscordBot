@@ -15,14 +15,17 @@ menuGang = {'arby': ['gobbler','mountain','beefboi','sliders'],
             'jimmy':['random jimmy sub here']}
 
 def clearFile(id):
-    f = open(os.getcwd() + '\\Users\\' + str(id) + '\\foodList','w+')
-    f.truncate()
-    f.close()
+    if os.path.exists(os.getcwd() + '\\Users\\' + str(id) + '\\foodList'):
+            f = open(os.getcwd() + '\\Users\\' + str(id) + '\\foodList','w+')
+            f.truncate()
+            f.close()
+            
+    else:
+            return
 
 
 class MyClient(discord.Client):
-    def onServer(self):
-        print('hi')
+
 
 
     async def on_ready(self):
@@ -191,6 +194,6 @@ class MyClient(discord.Client):
 def Main():
     client = MyClient()
 
-    client.run('NzI4NzY1OTI2MDY1MDQ1NTQ0.Xv_K5Q.2c3ugylKH-h0HPy_Z9DfFVQL30A')
+    client.run('Token')
 
 Main()
