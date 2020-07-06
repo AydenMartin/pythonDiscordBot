@@ -14,20 +14,31 @@ menuGang = {'arby': ['gobbler','mountain','beefboi','sliders'],
             'culvers':['random culver burger here'],
             'jimmy':['random jimmy sub here']}
 
-def clearFile(id):
-    if os.path.exists(os.getcwd() + '\\Users\\' + str(id) + '\\foodList'):
-        f = open(os.getcwd() + '\\Users\\' + str(id) + '\\foodList', 'w+')
-        f.truncate()
-        f.close()
 
-    else:
-        return
+def clearFile(id):
+    f = open(os.getcwd() + '\\Users\\' + str(id) + '\\foodList', 'w+')
+    f.truncate()
+    f.close()
+
+
 def chooseRando(dict):
     rest = random.randint(0,len(dict)-2)
     rest = dict[rest]
     rest = rest.split(',')
     restchoice = random.randint(1,len(rest)-1)
     return str(rest[0] + ' ' + rest[restchoice])
+
+
+def listFood(id):
+    file = open(os.getcwd() + '\\Users\\' + str(id) + '\\foodList','r')
+    result = file.read()
+    file.close()
+    result = result.split(';')
+    string = 'your current restaurants are: \n'
+    for i in result:
+        string += str(i) + '\n'
+    return string
+
 class MyClient(discord.Client):
 
     async def on_ready(self):
@@ -50,12 +61,7 @@ class MyClient(discord.Client):
     async def on_message(self, message):
         # don't respond to ourselves
         if message.author == self.user:
-           return
-
-
-        if message.content == 'botOff':
-            self.close()
-
+            return
         if message.content == 'ping':
             await message.channel.send('pong')
 
@@ -66,39 +72,32 @@ class MyClient(discord.Client):
             await message.channel.send(string)
 
         if str(message.content).startswith('myfood'):
+
+            # makes sure you dont open a file that doesnt exist, creates if no exist
             foodFolder = os.getcwd() + '\\Users\\' + str(message.author.id) + '\\foodList'
             if (os.path.exists(foodFolder)) != True:
                 textFile = open(str(foodFolder), 'w')
                 textFile.close()
 
+            # runs a function to clear the users food file
             if message.content == 'myfood clear':
                 clearFile(message.author.id)
                 await message.channel.send("your file has been cleared")
                 return
 
+            # runs a function to choose a random restaurant and item from the users food list
             if message.content == 'myfood random':
                 f = open(foodFolder,'r')
                 contents = f.read()
+                f.close()
                 contents = contents.split(';')
                 choice = chooseRando(contents)
                 await message.channel.send(choice)
                 return
 
-            foodFolder = open(os.getcwd() + '\\Users\\' + str(message.author.id) + '\\foodList', 'r')
-            parse = foodFolder.read()
-            parse = parse.split(';')
-            restaurants = {}
-            print(parse)
-            string = "your current restuarants and food are: "
-            for i in range(0,len(parse)-1):
-                menu = parse[i].split(',')
-                string += str(menu) + '\n'
-                restaurants[menu[0]] = menu
-
-            print(restaurants)
-            foodFolder.close()
-
-            await message.channel.send(string)
+            # prints current items in users food file, only runs this section when message is 'myfood'
+            listresult = listFood(message.author.id)
+            await message.channel.send(listresult)
             return
 
         if str(message.content).startswith('addfood'):
@@ -194,6 +193,6 @@ class MyClient(discord.Client):
 def Main():
     client = MyClient()
 
-    client.run('token')
+    client.run('Token')
 
 Main()
