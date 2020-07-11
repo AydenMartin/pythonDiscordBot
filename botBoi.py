@@ -1,6 +1,8 @@
 import discord
 import random
 import os
+import requests as r
+import time as t
 import matplotlib.pyplot as plt
 from sympy.parsing.sympy_parser import parse_expr
 from sympy.parsing.sympy_parser import standard_transformations
@@ -18,6 +20,31 @@ menuGang = {'arby': ['gobbler', 'mountain', 'beefboi', 'sliders'],
             'culvers': ['random culver burger here'],
             'jimmy': ['random jimmy sub here']}
 
+#uses the OpenWeatherMap site and personal api key, to use this feature you will need to get own api key
+def openWeatherMapCall(city,country):
+    apikey = 'Token'
+    weather = r.get('http://api.openweathermap.org/data/2.5/weather?q='+city+','+country+'&appid='+apikey)
+    data = str(weather.content)
+    weather.close()
+    unwantedchars = ['b\'','\"','{','[',']','}','\'']
+    for d in unwantedchars:
+        data = data.replace(d,'')
+    data = data.split(',')
+    citytime = data[23].split(':')[1]
+    time = t.time() + int(citytime)
+    print(t.time(),citytime)
+    time = t.gmtime(time)
+    print(time)
+
+    temp = float(data[7].split(':')[2])
+    Ftemp = round((temp-273.15) * (9/5) + 32)
+    Ctemp = round((temp-273.15))
+    description = str(data[4].split(':')[1])
+    print(description)
+    result = city + ' ' + country +'\n Time(24H): ' + str(time.tm_hour) + ':' + str(time.tm_min) \
+             + '\n Fahreinheit: ' + str(Ftemp) + ' Celsius: ' + str(Ctemp)\
+             +'\n Description: ' + description
+    return(result)
 
 def clearFile(id):
     f = open(os.getcwd() + '\\Users\\' + str(id) + '\\foodList', 'w+')
@@ -67,6 +94,11 @@ class MyClient(discord.Client):
             return
         if message.content == 'ping':
             await message.channel.send('pong')
+
+        if str(message.content).startswith('weather') and len(str(message.content).split(' ')) == 3:
+            string = str(message.content).split(' ')
+            weather = openWeatherMapCall(string[1],string[2])
+            await message.channel.send(weather)
 
         if message.content == "food???":
             place = random.choice(foodPlaces)
@@ -202,9 +234,12 @@ class MyClient(discord.Client):
                                            'and food item from your lists')
                 return
             if (message.content == 'botHelp addfood'):
-                await message.channel.send("please add restaurant to add, in this format "
+                await message.channel.send("To add restuarant, please do it in this format "
                                            "\'addfood restaurant food1 food2\'")
                 return
+            if (message.content == 'botHelp weather'):
+                await message.channel.send("To find the weather, please do it in this format"
+                                           "\'weather city country\' please dont put spaces in city or country name")
             await message.channel.send("ping,food???,myfood,addfood \n "
                                        "to find out more information on a specific command do "
                                        "\' botHelp command\'")
@@ -213,7 +248,7 @@ class MyClient(discord.Client):
 def Main():
     client = MyClient()
 
-    client.run('token')
+    client.run('Token')
 
 
 Main()
