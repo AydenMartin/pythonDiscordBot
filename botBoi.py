@@ -1,3 +1,11 @@
+"""
+Discord bot made by Ayden Martin 2020 and Simon Hillebrands
+To use the bot you need to have a discord auth token and a OpenWeatherMap api key
+"""
+
+#word of the day https://www.dictionary.com/e/word-of-the-day/
+
+
 import discord
 import random
 import os
@@ -20,9 +28,10 @@ menuGang = {'arby': ['gobbler', 'mountain', 'beefboi', 'sliders'],
             'culvers': ['random culver burger here'],
             'jimmy': ['random jimmy sub here']}
 
-#uses the OpenWeatherMap site and personal api key, to use this feature you will need to get own api key
+
+# uses the OpenWeatherMap site and personal api key, to use this feature you will need to get own api key
 def openWeatherMapCall(city,country):
-    apikey = 'Token'
+    apikey = 'Key'
     weather = r.get('http://api.openweathermap.org/data/2.5/weather?q='+city+','+country+'&appid='+apikey)
     data = str(weather.content)
     weather.close()
@@ -32,19 +41,42 @@ def openWeatherMapCall(city,country):
     data = data.split(',')
     citytime = data[23].split(':')[1]
     time = t.time() + int(citytime)
-    print(t.time(),citytime)
     time = t.gmtime(time)
-    print(time)
 
     temp = float(data[7].split(':')[2])
     Ftemp = round((temp-273.15) * (9/5) + 32)
     Ctemp = round((temp-273.15))
     description = str(data[4].split(':')[1])
-    print(description)
     result = city + ' ' + country +'\n Time(24H): ' + str(time.tm_hour) + ':' + str(time.tm_min) \
              + '\n Fahreinheit: ' + str(Ftemp) + ' Celsius: ' + str(Ctemp)\
              +'\n Description: ' + description
-    return(result)
+    return result
+
+
+def define(word):
+    sentence = word.split(' ')
+    query = "https://www.dictionary.com/browse/"
+    for i in range(1,len(sentence)-1):
+        query += sentence[i]+'-'
+    query += sentence[len(sentence)-1]
+    try:
+        google = r.get(query)
+    except r.exceptions.ConnectionError:
+        return("wait a few seconds and try again please, bot had trouble connecting to site")
+    except Exception as e:
+        print(e)
+        return("uhh sumthin went wrong try again pls")
+
+    results = google.text
+    google.close()
+    if results.find('name=\"description\" content=') > 0:
+        resultsBegin = results.find('name=\"description\" content=')
+        resultsEnd = results.find(' See more.\">')
+        results = results[int(resultsBegin)+28:int(resultsEnd)]
+    else:
+        results = "could not find this word"
+
+    return results
 
 def clearFile(id):
     f = open(os.getcwd() + '\\Users\\' + str(id) + '\\foodList', 'w+')
@@ -94,6 +126,9 @@ class MyClient(discord.Client):
             return
         if message.content == 'ping':
             await message.channel.send('pong')
+
+        if str(message.content).startswith('define') and len(str(message.content).split(' ')) >= 2:
+            await message.channel.send(define(str(message.content)))
 
         if str(message.content).startswith('weather') and len(str(message.content).split(' ')) == 3:
             string = str(message.content).split(' ')
