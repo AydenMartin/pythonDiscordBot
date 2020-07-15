@@ -31,7 +31,7 @@ menuGang = {'arby': ['gobbler', 'mountain', 'beefboi', 'sliders'],
 
 # uses the OpenWeatherMap site and personal api key, to use this feature you will need to get own api key
 def openWeatherMapCall(city,country):
-    apikey = 'Key'
+    apikey = 'api_key'
     weather = r.get('http://api.openweathermap.org/data/2.5/weather?q='+city+','+country+'&appid='+apikey)
     data = str(weather.content)
     weather.close()
@@ -124,6 +124,34 @@ class MyClient(discord.Client):
         # don't respond to ourselves
         if message.author == self.user:
             return
+
+        if str(message.content).lower().__contains__("bosnia"):
+            emoji = r'🇧🇦'
+            await message.add_reaction(emoji)
+
+
+        # if message.author == message.guild.owner and str(message.content).startswith('daily channel') and len(str(message.content).split(' ')) == 3:
+        #     channel = message.content.split(' ')[2]
+        #     channels = message.guild.channels
+        #     channelFound = False
+        #     print(channel)
+        #     for i in channels:
+        #         print(i)
+        #         if i == channel:
+        #             channelFound = True
+        #     if channelFound == True:
+        #         await message.channel.sent('found channel')
+        #         # if (os.path.exists(os.getcwd() + '\\Server\\' + str(message.guild) +'\\settings')) == False:
+        #         #     file = open(os.getcwd() + '\\Server\\' + str(message.guild) +'\\settings','w+')
+        #         #     file.write("daily_word:"+ channel)
+        #         #     file.close()
+        #         # else:
+        #         #     file = open(os.getcwd() + '\\Server\\' + str(message.guild) +'\\settings','a+')
+        #     else:
+        #         await message.channel.send("could not find that channel")
+
+
+
         if message.content == 'ping':
             await message.channel.send('pong')
 
