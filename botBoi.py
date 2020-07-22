@@ -31,7 +31,7 @@ menuGang = {'arby': ['gobbler', 'mountain', 'beefboi', 'sliders'],
 
 # uses the OpenWeatherMap site and personal api key, to use this feature you will need to get own api key
 def openWeatherMapCall(city,country):
-    apikey = '44267478fc6b71de0c3667fa51bb7966'
+    apikey = 'apikey'
     weather = r.get('http://api.openweathermap.org/data/2.5/weather?q='+city+','+country+'&appid='+apikey)
     data = str(weather.content)
     weather.close()
@@ -311,7 +311,7 @@ class MyClient(discord.Client):
 def Main():
     client = MyClient()
 
-    client.run('NzI4NzY1OTI2MDY1MDQ1NTQ0.XwOYQg.VrlS00dflaOqefwlpHcJ4HWXIGc')
+    client.run('Token')
 
 
 Main()
