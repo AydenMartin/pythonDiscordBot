@@ -17,6 +17,8 @@ from sympy.parsing.sympy_parser import standard_transformations
 from sympy.parsing.sympy_parser import implicit_multiplication_application
 from sympy.plotting import plot
 
+gamesAvail = ['othello','chess','connectfour']
+
 foodPlaces = ['arby', 'bosnia', 'mcdonald', 'tacobell', 'pizza', 'subway', 'culvers', 'jimmy']
 
 menuGang = {'arby': ['gobbler', 'mountain', 'beefboi', 'sliders'],
@@ -103,6 +105,30 @@ def listFood(id):
     return string
 
 
+def ListGames(author,game):
+    game = str(game).lower()
+    gameFolder = os.getcwd() + '\\Users\\' + str(author) + '\\games'
+    string = ""
+    if (os.path.exists(gameFolder)) != True:
+        textFile = open(str(gameFolder), 'w+')
+        textFile.write("")
+        textFile.close()
+        return "you currently have no games at all"
+    f = open(gameFolder, "r")
+    contents = f.read()
+    if contents == "":
+        return "you currently have no games at all"
+    games = contents.split('\n')
+    for Games in games:
+        if Games.startswith(game):
+            currentGames = Games.split(',')
+            for i in range(1, len(currentGames)):
+                string += currentGames[i] + '\n'
+            string = "These are your current " + game + ' games\n' + string
+            return string
+    return "could not find any current " + game + '\'s that you had going'
+
+
 class MyClient(discord.Client):
 
     async def on_ready(self):
@@ -111,6 +137,8 @@ class MyClient(discord.Client):
             os.mkdir(os.getcwd() + '\\Users')
         if (os.path.exists(os.getcwd() + '\\Server')) == False:
             os.mkdir(os.getcwd() + '\\Server')
+        if (os.path.exists(os.getcwd() + '\\Games')) == False:
+            os.mkdir(os.getcwd() + '\\Games')
         for i in self.users:
             customUser = os.getcwd() + '\\Users' + '\\' + str(i.id)
             if (os.path.exists(customUser)) != True:
@@ -122,15 +150,17 @@ class MyClient(discord.Client):
 
     async def on_message(self, message):
         # don't respond to ourselves
+
+        text = str(message.content)
         if message.author == self.user:
             return
 
-        if str(message.content).lower().__contains__("bosnia"):
+        if text.lower().__contains__("bosnia"):
             emoji = r'🇧🇦'
             await message.add_reaction(emoji)
 
-
-        # if message.author == message.guild.owner and str(message.content).startswith('daily channel') and len(str(message.content).split(' ')) == 3:
+        # if message.author == message.guild.owner and str(message.content).startswith('daily channel')
+        # and len(str(message.content).split(' ')) == 3:
         #     channel = message.content.split(' ')[2]
         #     channels = message.guild.channels
         #     channelFound = False
@@ -150,18 +180,30 @@ class MyClient(discord.Client):
         #     else:
         #         await message.channel.send("could not find that channel")
 
-
-
-        if message.content == 'ping':
+        if text == 'ping':
             await message.channel.send('pong')
 
-        if str(message.content).startswith('define') and len(str(message.content).split(' ')) >= 2:
-            await message.channel.send(define(str(message.content)))
+        if text.startswith('define') and len(text.split(' ')) >= 2:
+            await message.channel.send(define(text))
 
-        if str(message.content).startswith('weather') and len(str(message.content).split(' ')) == 3:
+        if text.startswith('weather') and len(text.split(' ')) == 3:
             string = str(message.content).split(' ')
             weather = openWeatherMapCall(string[1],string[2])
             await message.channel.send(weather)
+
+        if text.startswith('!game'):
+            if len(text.split(' ')) == 1:
+                string = 'the current games available are: \n'
+                for i in gamesAvail:
+                    string += i + '\n'
+                await message.channel.send(string)
+            if len(text.split(' ')) == 2:
+                result = ListGames(message.author.id,str(message.content).split(' ')[1])
+                await message.channel.send(result)
+            if len(text.split(' ')) > 2:
+                await message.channel.send('to use this command do \n'
+                                           '\'!game\' or \n'
+                                           '\'!game (game of choice)\'')
 
         if message.content == "food???":
             place = random.choice(foodPlaces)
@@ -169,7 +211,28 @@ class MyClient(discord.Client):
             string = str(place + "  " + food)
             await message.channel.send(string)
 
-        if str(message.content).startswith('myfood'):
+        if text.startswith('!challange'):
+            commands = text.split(' ')
+            if len(commands) == 1:
+                await message.channel.send("challange is a function to send game challagnes such as chess and othello"
+                                           "to another player\n"
+                                           "To use challange do it like this\n "
+                                           "\'!challange game Userid/@user\'")
+                return
+            if len(commands != 3):
+                await message.channel.send("To use challange do it like this\n "
+                                           "\'!challange game Userid/@user\'")
+                return
+            if len(commands == 3):
+                gameFound = False
+                for i in gamesAvail:
+                    if commands[1] == i:
+                        gameFound = True
+                        break
+                if gameFound == False:
+                    await message.channel.send("we currently do not have that game, to get a list of our games use "
+                                               "\n \'!game\'")
+        if text.startswith('myfood'):
 
             # makes sure you dont open a file that doesnt exist, creates if no exist
             foodFolder = os.getcwd() + '\\Users\\' + str(message.author.id) + '\\foodList'
@@ -198,7 +261,7 @@ class MyClient(discord.Client):
             await message.channel.send(listresult)
             return
 
-        if str(message.content).startswith('addfood'):
+        if text.startswith('addfood'):
             if os.path.exists(os.getcwd() + '\\Users\\' + str(message.author.id) + '\\foodList'):
                 foodFolder = open(os.getcwd() + '\\Users\\' + str(message.author.id) + '\\foodList', 'r+')
             else:
@@ -270,7 +333,7 @@ class MyClient(discord.Client):
                 foodFolder.close()
                 await message.channel.send("succesfully added")
 
-        if str(message.content).replace(' ','').startswith('y=') and message.author != self.user and len(str(message.content)) > 2:
+        if text.replace(' ','').startswith('y=') and message.author != self.user and len(text) > 2:
             msg = str(message.content).replace(' ','')
             msg = msg.replace('^','**')
 
@@ -288,7 +351,7 @@ class MyClient(discord.Client):
             await message.channel.send(file=discord.File('graph.png'))
             return
 
-        if str(message.content).startswith('botHelp') and len(str(message.content).split(' ')) < 3:
+        if text.startswith('botHelp') and len(text.split(' ')) < 3:
             if (message.content == 'botHelp myfood'):
                 await message.channel.send('the myfood command by itself gives a lsit of all restuarants'
                                            'and food currently on your list \n'
