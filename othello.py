@@ -1,6 +1,8 @@
 from PIL import Image 
 import copy 
 import pickle 
+alphabet = ['a','b','c','d','e','f','g','h']
+palyers = {}
 def possibleMoves(disk,board):
     possible_board = copy.deepcopy(board)
     x = 0
@@ -128,7 +130,7 @@ def updateBoardImage(turn,board):
             x+=1
         x=0
         y+=1
-    board_png.save('board_img.png')
+    board_png.save('boardState.png')
 def updateBoard(y,x,disk,board):
     if(x<7):
         if(board[x+1][y] != None and board[x+1][y] != disk):
@@ -275,8 +277,9 @@ def updateGame(move):
         disk = 1
     else:
         disk = 0
-    x = int(move[0])
-    y = int(move[1])
+
+    x = int(alphabet.index(move[0]))
+    y = int(move[1])-1
     possible_board = possibleMoves(disk,board)
     if(not(checkGameStatus(possible_board))):
         return False

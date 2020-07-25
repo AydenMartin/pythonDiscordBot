@@ -11,6 +11,7 @@ import random
 import os
 import requests as r
 import time as t
+import othello
 import matplotlib.pyplot as plt
 from sympy.parsing.sympy_parser import parse_expr
 from sympy.parsing.sympy_parser import standard_transformations
@@ -120,13 +121,13 @@ def ListGames(author,game):
     contents = f.read()
     if contents == "":
         return "you currently have no games at all"
-    games = contents.split('\n')
+    games = contents.split(';')
     for Games in games:
         if Games.startswith(game):
             currentGames = Games.split(',')
             for i in range(1, len(currentGames)):
-                string += currentGames[i] + '\n'
-            string = "These are your current " + game + ' games\n' + string
+                string += currentGames[i] + ';'
+            string = "These are your current " + game + ' games;' + string
             return string
     return "could not find any current " + game + '\'s that you had going'
 
@@ -134,6 +135,7 @@ def creatGame(id1,id2,game):
     files = []
     newfiles = []
     game = game.strip(' ')
+
     if os.path.exists(os.getcwd() + '\\Games\\'+ game + str(id1) + 'v' + str(id2)):
         return 2
     if os.path.exists(os.getcwd() + '\\Users\\' + str(id1) + '\\games'):
@@ -286,6 +288,8 @@ class MyClient(discord.Client):
 
             if commands[2][0].isalpha() and commands[2][1].isdigit():
                 move = commands[2]
+                othello.updateGame(move)
+                await message.channel.send(file=discord.File('boardState.png'))
             else:
                 await message.channel.send('please type in a valid move\n'
                                            '\'(letter)(number)\', EX: f5,g3,etc')
@@ -326,6 +330,9 @@ class MyClient(discord.Client):
                 for i in gamesAvail:
                     if commands[1] == i:
                         result = creatGame(message.author.id,message.mentions[0].id,commands[1])
+                        if(commands[1] == 'othello'):
+                            othello.startGame(message.author.id,message.mentions[0].id)
+                            await message.channel.send(file=discord.File('boardState.png'))
                         if result == 1:
                             await message.channel.send("succesfully made challange\n"
                                                        "to start the game do "
@@ -480,7 +487,7 @@ class MyClient(discord.Client):
 def Main():
     client = MyClient()
 
-    client.run('token')
+    client.run('NzI4NzY1OTI2MDY1MDQ1NTQ0.XxjQog.KOgb0OZ9sAjJUU3X0BLLXK68zG4')
 
 
 Main()
