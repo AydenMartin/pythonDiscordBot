@@ -1,9 +1,6 @@
 from PIL import Image 
 import copy 
 import pickle 
-
-
-
 def possibleMoves(disk,board):
     possible_board = copy.deepcopy(board)
     x = 0
@@ -259,12 +256,18 @@ def startGame(player1,player2):
         [None, None, None, None, None, None, None, None]]
     updateBoardImage(0,board)
     s=[player1,player2,board,0]
-    filename = 'save.p'
+    filename = 'Games\\save.p'
     outfile = open(filename,'wb')
     pickle.dump(s,outfile)
     outfile.close
+def checkGameStatus(possible_board):
+    for i in possible_board:
+        for j in i:
+            if j ==2:
+                return False
+    return True
 def updateGame(move):
-    infile = open('save.p','rb')
+    infile = open('Games\\save.p','rb')
     s = pickle.load( infile )
     infile.close()
     board = s[2]
@@ -275,6 +278,8 @@ def updateGame(move):
     x = int(move[0])
     y = int(move[1])
     possible_board = possibleMoves(disk,board)
+    if(not(checkGameStatus(possible_board))):
+        return False
     if(possible_board[y][x] == 2):
         board[y][x] = disk
         board = updateBoard(x,y,disk,board)
@@ -285,7 +290,7 @@ def updateGame(move):
         updateBoardImage(1,board)
     if(disk == 1):
         updateBoardImage(0,board)
-    filename = 'save.p'
+    filename = 'Games\\save.p'
     outfile = open(filename,'wb')
     pickle.dump(s,outfile)
     outfile.close   
