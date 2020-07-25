@@ -123,7 +123,7 @@ def ListGames(author,game):
         return "you currently have no games at all"
     games = contents.split(';')
     for Games in games:
-        if Games.startswith(game):
+        if Games.__contains__(game):
             currentGames = Games.split(',')
             for i in range(1, len(currentGames)):
                 string += currentGames[i] + ';'
@@ -186,7 +186,7 @@ def gameExists(author,game,gamenum):
         f.close()
     contents = contents.split(';')
     for n in contents:
-        if n.startswith(game):
+        if n.__contains__(game):
             for i in n.split(','):
                 if i.startswith('game'+str(gamenum)):
                     return i.split(' ')[1]
@@ -278,32 +278,40 @@ class MyClient(discord.Client):
 
         if text.startswith('!othello') and len(text.split(' ')) == 3:
             commands = text.split(' ')
-            file = 'othello'
-            if commands[1].isdigit():
-                gamenum = commands[1]
-            else:
+
+            if commands[1].isdigit() == False:
                 await message.channel.send('please type in a valid game\n'
                                            '\'othello (number) (letter)(number)\', EX: othello 1 f6 etc')
                 return
 
-            if commands[2][0].isalpha() and commands[2][1].isdigit():
-                move = commands[2]
-                othello.updateGame(move)
-                await message.channel.send(file=discord.File('boardState.png'))
-            else:
-                await message.channel.send('please type in a valid move\n'
-                                           '\'(letter)(number)\', EX: f5,g3,etc')
-                return
-            game = gameExists(message.author.id,'othello',gamenum)
+            if len(commands[2]) == 2:
+                if (commands[2][0].isalpha() == False) or (commands[2][1].isdigit() == False):
+                    await message.channel.send('please type in a valid move\n'
+                                               '\'(letter)(number)\', EX: f5,g3,etc')
+                    return
+
+            move = commands[2]
+            game = gameExists(message.author.id, 'othello', commands[1])
             if game == False:
                 await message.channel.send('could not find that game, type '
                                            '\'!game\' to get your current games')
                 return
-            else:
-                print('uwu')
-                file += game
-                print(file)
-                #othellogame = othello
+
+            file = 'othello' + game
+            result = othello.updateGame(file,move,message.author.id)
+            if result == -1:
+                await message.channel.send("It is currently not your turn")
+                return
+            if result == -2:
+                await message.channel.send("The game is over")
+                return
+            if result == -2:
+                file = discord.File('boardState.png')
+                await message.channel.send("its the other persons turn")
+                await message.channel.send(file)
+                return
+            await message.channel.send(file=discord.File('boardState.png'))
+            #othellogame = othello
 
 
 
@@ -487,7 +495,7 @@ class MyClient(discord.Client):
 def Main():
     client = MyClient()
 
-    client.run('NzI4NzY1OTI2MDY1MDQ1NTQ0.XxjQog.KOgb0OZ9sAjJUU3X0BLLXK68zG4')
+    client.run('token')
 
 
 Main()
