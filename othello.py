@@ -6,7 +6,7 @@ palyers = {}
 def possibleMoves(disk,board):
     possible_board = copy.deepcopy(board)
     x = 0
-    for rows in possible_board:
+    for rows in board:
         y = 0
         for col in rows:
             if(col != disk and col != None and col!=2):
@@ -138,7 +138,7 @@ def updateBoard(y,x,disk,board):
             i = 1
             temp_board = copy.deepcopy(board)
             Flag = False
-            while(d != disk and d!=None):
+            while(d != disk and d!=None and x+i<8):
                 d = temp_board[x+i][y]
                 temp_board[x+i][y] = disk 
                 if(d == disk and i>1):
@@ -152,7 +152,7 @@ def updateBoard(y,x,disk,board):
                 i = 1
                 temp_board = copy.deepcopy(board)
                 Flag = False
-                while(d != disk and d!=None):
+                while(d != disk and d!=None and x+i<8 and y+i<8):
                     d = temp_board[x+i][y+i]
                     temp_board[x+i][y+i] = disk 
                     if(d == disk and i>1):
@@ -166,7 +166,7 @@ def updateBoard(y,x,disk,board):
                 i = 1
                 temp_board = copy.deepcopy(board)
                 Flag = False
-                while(d != disk and d!=None):
+                while(d != disk and d!=None and x+i<8 and y-i>-1):
                     d = temp_board[x+i][y-i]
                     temp_board[x+i][y-i] = disk 
                     if(d == disk and i>1):
@@ -181,7 +181,7 @@ def updateBoard(y,x,disk,board):
             temp_board = board 
             temp_board = copy.deepcopy(board)
             Flag = False
-            while(d != disk and d!=None):
+            while(d != disk and d!=None and y+i<8):
                 d = temp_board[x][y+i]
                 temp_board[x][y+i] = disk 
                 if(d == disk and i>1):
@@ -195,7 +195,7 @@ def updateBoard(y,x,disk,board):
             i = 1
             temp_board = copy.deepcopy(board)
             Flag = False
-            while(d != disk and d!=None):
+            while(d != disk and d!=None and y-i>-1):
                 d = temp_board[x][y-i]
                 temp_board[x][y-i] = disk 
                 if(d == disk and i>1):
@@ -209,7 +209,7 @@ def updateBoard(y,x,disk,board):
             i = 1
             temp_board = copy.deepcopy(board)
             Flag = False
-            while(d != disk and d!=None):
+            while(d != disk and d!=None and x-i>-1):
                 d = temp_board[x-i][y]
                 temp_board[x-i][y] = disk 
                 if(d == disk and i>1):
@@ -223,7 +223,7 @@ def updateBoard(y,x,disk,board):
                 i = 1
                 temp_board = copy.deepcopy(board)
                 Flag = False
-                while(d != disk and d!=None):
+                while(d != disk and d!=None and x-i>-1 and y-i>-1):
                     d = temp_board[x-i][y-i]
                     temp_board[x-i][y-i] = disk 
                     if(d == disk and i>1):
@@ -237,7 +237,7 @@ def updateBoard(y,x,disk,board):
                 i = 1
                 temp_board = copy.deepcopy(board)
                 Flag = False
-                while(d != disk and d!=None):
+                while(d != disk and d!=None and x-i>-1 and y+i<8):
                     d = temp_board[x-i][y+i]
                     temp_board[x-i][y+i] = disk 
                     if(d == disk and i>1):
@@ -269,20 +269,20 @@ def checkGameStatus(possible_board):
                 return False
     return True
 def updateGame(move):
-    infile = open('Games\\save.p','rb')
-    s = pickle.load( infile )
+    infile = open('Games\save.p', 'rb')
+    s = pickle.load(infile)
     infile.close()
     board = s[2]
-    if(s[3] == 1):
+    if (s[3] == 1):
         disk = 1
     else:
         disk = 0
-
+    valid = True
     x = int(alphabet.index(move[0]))
-    y = int(move[1])-1
-    possible_board = possibleMoves(disk,board)
-    if(not(checkGameStatus(possible_board))):
-        return False
+    y = int(move[1]) - 1
+    possible_board = possibleMoves(disk, board)
+    if (not (checkGameStatus(possible_board))):
+        print('uwu')
     if(possible_board[y][x] == 2):
         board[y][x] = disk
         board = updateBoard(x,y,disk,board)
@@ -291,8 +291,11 @@ def updateGame(move):
         return("Not a legal move")
     if(disk == 0):
         updateBoardImage(1,board)
+        s[3] = 1
     if(disk == 1):
         updateBoardImage(0,board)
+        s[3] = 0
+    s[2] = board
     filename = 'Games\\save.p'
     outfile = open(filename,'wb')
     pickle.dump(s,outfile)
