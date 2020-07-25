@@ -16,6 +16,7 @@ from sympy.parsing.sympy_parser import parse_expr
 from sympy.parsing.sympy_parser import standard_transformations
 from sympy.parsing.sympy_parser import implicit_multiplication_application
 from sympy.plotting import plot
+#import othello
 
 gamesAvail = ['othello','chess','connectfour']
 
@@ -133,7 +134,7 @@ def creatGame(id1,id2,game):
     files = []
     newfiles = []
     game = game.strip(' ')
-    if os.path.exists(os.getcwd() + '\\Games\\' + str(id1) + 'v' + str(id2)):
+    if os.path.exists(os.getcwd() + '\\Games\\'+ game + str(id1) + 'v' + str(id2)):
         return 2
     if os.path.exists(os.getcwd() + '\\Users\\' + str(id1) + '\\games'):
         files.append(open((os.getcwd() + '\\Users\\' + str(id1) + '\\games'),'r+'))
@@ -172,11 +173,22 @@ def creatGame(id1,id2,game):
             i.truncate(0)
             i.write(newcontents)
             i.close()
-        f = open(os.getcwd() + '\\Games\\' + str(id1) + 'v' + str(id2),'w+')
+        f = open(os.getcwd() + '\\Games\\' + game + str(id1) + 'v' + str(id2),'w+')
         f.close()
     return 1
 
-
+def gameExists(author,game,gamenum):
+    if (os.path.exists(os.getcwd() + '\\Users\\' + str(author) + '\\games')):
+        f = open(os.getcwd() + '\\Users\\' + str(author) + '\\games')
+        contents = f.read()
+        f.close()
+    contents = contents.split(';')
+    for n in contents:
+        if n.startswith(game):
+            for i in n.split(','):
+                if i.startswith('game'+str(gamenum)):
+                    return i.split(' ')[1]
+    return False
 
 
 
@@ -262,7 +274,37 @@ class MyClient(discord.Client):
             string = str(place + "  " + food)
             await message.channel.send(string)
 
-        if text.startswith('!challange'):
+        if text.startswith('!othello') and len(text.split(' ')) == 3:
+            commands = text.split(' ')
+            file = 'othello'
+            if commands[1].isdigit():
+                gamenum = commands[1]
+            else:
+                await message.channel.send('please type in a valid game\n'
+                                           '\'othello (number) (letter)(number)\', EX: othello 1 f6 etc')
+                return
+
+            if commands[2][0].isalpha() and commands[2][1].isdigit():
+                move = commands[2]
+            else:
+                await message.channel.send('please type in a valid move\n'
+                                           '\'(letter)(number)\', EX: f5,g3,etc')
+                return
+            game = gameExists(message.author.id,'othello',gamenum)
+            if game == False:
+                await message.channel.send('could not find that game, type '
+                                           '\'!game\' to get your current games')
+                return
+            else:
+                print('uwu')
+                file += game
+                print(file)
+                #othellogame = othello
+
+
+
+
+        if text.startswith('!challenge'):
             commands = text.split(' ')
             if len(commands) == 1:
                 await message.channel.send("challange is a function to send game challagnes such as chess and othello"
@@ -285,7 +327,9 @@ class MyClient(discord.Client):
                     if commands[1] == i:
                         result = creatGame(message.author.id,message.mentions[0].id,commands[1])
                         if result == 1:
-                            await message.channel.send("succesfully made challange")
+                            await message.channel.send("succesfully made challange\n"
+                                                       "to start the game do "
+                                                       "!(yourchosengame) (gamenumber) (move)")
                         if result == 2:
                             await message.channel.send("You have a " + str(commands[1]) +
                                                        ' game with that user active right now')
@@ -293,6 +337,7 @@ class MyClient(discord.Client):
 
                 await message.channel.send("we currently do not have that game, to get a list of our games use "
                                                "\n \'!game\'")
+
         if text.startswith('myfood'):
 
             # makes sure you dont open a file that doesnt exist, creates if no exist
@@ -435,7 +480,7 @@ class MyClient(discord.Client):
 def Main():
     client = MyClient()
 
-    client.run('Token')
+    client.run('token')
 
 
 Main()
