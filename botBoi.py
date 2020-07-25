@@ -80,6 +80,7 @@ def define(word):
 
     return results
 
+
 def clearFile(id):
     f = open(os.getcwd() + '\\Users\\' + str(id) + '\\foodList', 'w+')
     f.truncate()
@@ -127,6 +128,56 @@ def ListGames(author,game):
             string = "These are your current " + game + ' games\n' + string
             return string
     return "could not find any current " + game + '\'s that you had going'
+
+def creatGame(id1,id2,game):
+    files = []
+    newfiles = []
+    game = game.strip(' ')
+    if os.path.exists(os.getcwd() + '\\Games\\' + str(id1) + 'v' + str(id2)):
+        return 2
+    if os.path.exists(os.getcwd() + '\\Users\\' + str(id1) + '\\games'):
+        files.append(open((os.getcwd() + '\\Users\\' + str(id1) + '\\games'),'r+'))
+    else:
+        newfiles.append(open((os.getcwd() + '\\Users\\' + str(id1) + '\\games'), 'w'))
+    if os.path.exists(os.getcwd() + '\\Users\\' + str(id2) + '\\games'):
+        files.append(open((os.getcwd() + '\\Users\\' + str(id2) + '\\games'),'r+'))
+    else:
+        newfiles.append(open((os.getcwd() + '\\Users\\' + str(id2) + '\\games'),'w'))
+
+    if len(newfiles) != 0:
+        for file in newfiles:
+            file.write(game + ',game1' + ' ' + str(id1) + 'v' + str(id2)+';')
+            file.close()
+
+    for i in files:
+        found = False
+        contents = i.read()
+        type = contents.split(';')
+        newcontents = ''
+        for n in type:
+            inside = n.split(',')
+            inside[0] = str(inside[0]).replace(u'\x00', '')
+            if inside[0] == game:
+                found = True
+                gamenumber = len(inside)
+                newcontents += n + ',game' + str(gamenumber) + ' '+ str(id1) + 'v' + str(id2) + ';'
+            else:
+                newcontents += n
+
+        if found == False:
+            contents += game + ',game1 ' + str(id1) + 'v'+ str(id2) + ';'
+            i.write(contents)
+            i.close()
+        else:
+            i.truncate(0)
+            i.write(newcontents)
+            i.close()
+        f = open(os.getcwd() + '\\Games\\' + str(id1) + 'v' + str(id2),'w+')
+        f.close()
+    return 1
+
+
+
 
 
 class MyClient(discord.Client):
@@ -219,18 +270,28 @@ class MyClient(discord.Client):
                                            "To use challange do it like this\n "
                                            "\'!challange game Userid/@user\'")
                 return
-            if len(commands != 3):
+            if len(commands) != 3:
+
                 await message.channel.send("To use challange do it like this\n "
                                            "\'!challange game Userid/@user\'")
                 return
-            if len(commands == 3):
-                gameFound = False
+            if len(commands) == 3:
+                if len(message.mentions) == 0:
+                    await message.channel.send("To use challange do it like this\n "
+                                               "\'!challange game Userid/@user\'")
+                    return
+
                 for i in gamesAvail:
                     if commands[1] == i:
-                        gameFound = True
-                        break
-                if gameFound == False:
-                    await message.channel.send("we currently do not have that game, to get a list of our games use "
+                        result = creatGame(message.author.id,message.mentions[0].id,commands[1])
+                        if result == 1:
+                            await message.channel.send("succesfully made challange")
+                        if result == 2:
+                            await message.channel.send("You have a " + str(commands[1]) +
+                                                       ' game with that user active right now')
+                        return
+
+                await message.channel.send("we currently do not have that game, to get a list of our games use "
                                                "\n \'!game\'")
         if text.startswith('myfood'):
 
